@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지수로그 미니 모의고사 1회 · OMR 마킹지</title>
+
+<!-- Pretendard -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- html2canvas (PNG export) -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<style>
+  :root{
+    --paper:#f6f3ec;
+    --paper-2:#fffdf8;
+    --ink:#1c2536;
+    --ink-soft:#475067;
+    --line:#d8d2c4;
+    --line-soft:#e7e1d4;
+    --navy:#1f3556;
+    --vermilion:#b6442f;
+    --vermilion-soft:#f3e6e1;
+    --correct:#2f7d55;
+    --correct-soft:#e4f0e8;
+    --wrong:#c0392b;
+    --wrong-soft:#f7e6e3;
+    --gold:#b88a2e;
+    --shadow:0 1px 2px rgba(28,37,54,.04), 0 8px 28px rgba(28,37,54,.08);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Pretendard',-apple-system,sans-serif;
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(31,53,86,.04), transparent 38%),
+      radial-gradient(circle at 88% 92%, rgba(182,68,47,.04), transparent 40%);
+    color:var(--ink);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    letter-spacing:-.01em;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:28px 18px 80px;}
+
+  /* ===== Exam header ===== */
+  .masthead{
+    border-top:3px solid var(--ink);
+    border-bottom:1px solid var(--line);
+    padding:18px 4px 14px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+    flex-wrap:wrap;
+  }
+  .masthead .eyebrow{
+    font-size:12px;letter-spacing:.22em;color:var(--vermilion);font-weight:700;text-transform:uppercase;
+  }
+  .masthead h1{
+    font-size:27px;font-weight:800;letter-spacing:-.02em;margin-top:3px;
+    font-family:'Pretendard';
+  }
+  .masthead .subj{
+    font-size:13px;color:var(--ink-soft);margin-top:2px;
+  }
+  .masthead .seal{
+    width:58px;height:58px;border:1.5px solid var(--ink);border-radius:50%;
+    display:grid;place-items:center;text-align:center;line-height:1.15;
+    font-size:12px;font-weight:700;color:var(--ink);flex-shrink:0;
+    transform:rotate(-7deg);background:var(--paper-2);
+  }
+  .seal small{font-size:9px;font-weight:600;letter-spacing:.12em;color:var(--ink-soft);}
+
+  .views{margin-top:26px;}
+  .view{display:none;animation:rise .5s cubic-bezier(.2,.7,.2,1) both;}
+  .view.active{display:block;}
+  @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+  .card{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:26px;
+  }
+
+  /* ===== Start view ===== */
+  .meta-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0 26px;
+  }
+  .meta{
+    border:1px solid var(--line-soft);border-radius:10px;padding:14px 12px;text-align:center;background:var(--paper);
+  }
+  .meta .v{font-size:23px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;}
+  .meta .l{font-size:11.5px;color:var(--ink-soft);margin-top:3px;letter-spacing:.02em;}
+
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .field{flex:1;min-width:150px;}
+  label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;letter-spacing:.02em;}
+  input[type=text]{
+    width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;
+    font-family:inherit;font-size:15px;color:var(--ink);background:var(--paper-2);transition:border-color .15s;
+  }
+  input[type=text]:focus{outline:none;border-color:var(--navy);}
+
+  .notice{
+    font-size:12.5px;color:var(--ink-soft);background:var(--vermilion-soft);
+    border:1px solid #ecd6cf;border-radius:10px;padding:13px 15px;margin-bottom:22px;line-height:1.6;
+  }
+  .notice b{color:var(--vermilion);}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:14px 26px;border-radius:11px;border:none;cursor:pointer;
+    font-family:inherit;font-size:15px;font-weight:700;letter-spacing:-.01em;transition:transform .12s, box-shadow .12s, background .15s;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--navy);color:#fff;box-shadow:0 4px 14px rgba(31,53,86,.28);}
+  .btn-primary:hover{background:#172a47;}
+  .btn-vermilion{background:var(--vermilion);color:#fff;box-shadow:0 4px 14px rgba(182,68,47,.26);}
+  .btn-vermilion:hover{background:#9e3927;}
+  .btn-ghost{background:var(--paper);color:var(--ink);border:1.5px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--ink-soft);}
+  .btn-block{width:100%;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+  /* ===== Exam / timer bar ===== */
+  .examtop{
+    position:sticky;top:0;z-index:20;background:var(--paper);
+    border-bottom:1px solid var(--line);padding:12px 4px;margin:-2px -2px 18px;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    backdrop-filter:blur(6px);
+  }
+  .examtop .who{font-size:13.5px;color:var(--ink-soft);}
+  .examtop .who b{color:var(--ink);font-weight:700;}
+  .timer{
+    display:flex;align-items:center;gap:9px;font-variant-numeric:tabular-nums;
+    font-size:24px;font-weight:800;color:var(--navy);letter-spacing:.01em;
+    padding:5px 16px;border:1.5px solid var(--line);border-radius:11px;background:var(--paper-2);
+  }
+  .timer .dot{width:9px;height:9px;border-radius:50%;background:var(--correct);animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .timer.warn{color:var(--gold);border-color:#ecd9ad;}
+  .timer.warn .dot{background:var(--gold);}
+  .timer.danger{color:var(--wrong);border-color:#e6c4bd;animation:shake .5s;}
+  .timer.danger .dot{background:var(--wrong);}
+  @keyframes shake{0%,100%{transform:none;}25%{transform:translateX(-2px);}75%{transform:translateX(2px);}}
+
+  /* ===== OMR ===== */
+  .omr-title{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
+  .omr-title h2{font-size:18px;font-weight:800;}
+  .omr-title span{font-size:12.5px;color:var(--ink-soft);}
+  .omr-hint{font-size:12.5px;color:var(--ink-soft);margin-bottom:18px;}
+
+  .omr-row{
+    display:grid;grid-template-columns:74px 1fr;align-items:center;gap:14px;
+    padding:14px 8px;border-bottom:1px solid var(--line-soft);
+  }
+  .omr-row:last-child{border-bottom:none;}
+  .qn{display:flex;align-items:center;gap:8px;}
+  .qn .num{
+    width:34px;height:34px;border-radius:9px;background:var(--navy);color:#fff;
+    display:grid;place-items:center;font-weight:800;font-size:15px;flex-shrink:0;
+  }
+  .qn .pt{font-size:11px;color:var(--ink-soft);white-space:nowrap;}
+
+  .bubbles{display:flex;gap:10px;flex-wrap:wrap;}
+  .bubble{
+    width:42px;height:42px;border-radius:50%;border:1.8px solid var(--line);
+    background:var(--paper-2);cursor:pointer;font-family:inherit;font-size:16px;font-weight:600;
+    color:var(--ink-soft);transition:all .13s;display:grid;place-items:center;
+  }
+  .bubble:hover{border-color:var(--navy);color:var(--navy);}
+  .bubble.sel{background:var(--ink);border-color:var(--ink);color:#fff;transform:scale(1.04);}
+  .short-in{
+    width:140px;padding:11px 14px;border:1.8px solid var(--line);border-radius:10px;
+    font-family:inherit;font-size:16px;font-weight:600;color:var(--ink);text-align:center;background:var(--paper-2);
+    font-variant-numeric:tabular-nums;
+  }
+  .short-in:focus{outline:none;border-color:var(--navy);}
+  .short-tag{font-size:11.5px;color:var(--vermilion);font-weight:700;margin-left:8px;}
+
+  .submit-area{margin-top:24px;display:flex;flex-direction:column;gap:10px;align-items:center;}
+  .progress-line{font-size:12.5px;color:var(--ink-soft);}
+  .progress-line b{color:var(--navy);}
+
+  /* ===== Result ===== */
+  .score-hero{
+    text-align:center;padding:30px 20px 26px;border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(180deg,var(--paper-2),var(--paper));box-shadow:var(--shadow);margin-bottom:18px;
+  }
+  .score-hero .who{font-size:13px;color:var(--ink-soft);margin-bottom:10px;}
+  .score-hero .big{font-size:58px;font-weight:800;color:var(--navy);line-height:1;font-variant-numeric:tabular-nums;}
+  .score-hero .big small{font-size:24px;color:var(--ink-soft);font-weight:700;}
+  .score-hero .rate{font-size:14px;color:var(--ink-soft);margin-top:10px;}
+  .score-hero .rate b{color:var(--vermilion);}
+  .chiprow{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+  .chip{font-size:12px;font-weight:700;padding:6px 13px;border-radius:20px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink-soft);}
+  .chip.ok{background:var(--correct-soft);border-color:#c3e0cf;color:var(--correct);}
+  .chip.no{background:var(--wrong-soft);border-color:#e8c6bf;color:var(--wrong);}
+
+  table.result{width:100%;border-collapse:collapse;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table.result th,table.result td{padding:12px 10px;text-align:center;font-size:13.5px;border-bottom:1px solid var(--line-soft);}
+  table.result th{background:var(--navy);color:#fff;font-weight:700;font-size:12.5px;letter-spacing:.03em;}
+  table.result td{font-variant-numeric:tabular-nums;}
+  table.result tr:last-child td{border-bottom:none;}
+  table.result .rno{font-weight:800;color:var(--navy);}
+  table.result .mark{font-size:18px;font-weight:800;}
+  table.result .mark.o{color:var(--correct);}
+  table.result .mark.x{color:var(--wrong);}
+  table.result tr.wrong{background:var(--wrong-soft);}
+  table.result .lvl{font-size:11px;color:var(--ink-soft);}
+
+  /* ===== Solutions ===== */
+  .sol-block{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 24px;margin-bottom:16px;box-shadow:var(--shadow);
+  }
+  .sol-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+  .sol-head .left{display:flex;align-items:center;gap:11px;}
+  .sol-head .num{width:32px;height:32px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px;}
+  .sol-head .src{font-size:12px;color:var(--ink-soft);}
+  .sol-head .ans{font-size:13px;font-weight:800;color:var(--vermilion);padding:5px 12px;border:1.5px solid #ecd6cf;border-radius:8px;background:var(--vermilion-soft);white-space:nowrap;}
+  .sol-head .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;}
+  .badge.o{background:var(--correct-soft);color:var(--correct);}
+  .badge.x{background:var(--wrong-soft);color:var(--wrong);}
+  .sol-body{font-size:15px;line-height:1.95;color:var(--ink);}
+  .sol-body .step{padding:3px 0;}
+  .katex{font-size:1.04em;}
+
+  .section-label{
+    display:flex;align-items:center;gap:12px;margin:30px 0 16px;
+  }
+  .section-label h2{font-size:20px;font-weight:800;white-space:nowrap;}
+  .section-label .rule{flex:1;height:1px;background:var(--line);}
+  .section-label .ico{color:var(--vermilion);font-size:18px;}
+
+  .foot{text-align:center;font-size:11.5px;color:var(--ink-soft);margin-top:34px;line-height:1.7;}
+  .foot .div{border-top:1px solid var(--line);padding-top:16px;}
+
+  @media (max-width:560px){
+    .meta-grid{grid-template-columns:repeat(2,1fr);}
+    .masthead h1{font-size:23px;}
+    .bubble{width:38px;height:38px;}
+    .omr-row{grid-template-columns:64px 1fr;gap:8px;}
+    table.result th,table.result td{padding:9px 5px;font-size:12px;}
+  }
+  @media print{
+    .examtop,.btn,.btn-row,.submit-area{display:none!important;}
+    body{background:#fff;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <div class="eyebrow">제2교시 · 수학영역</div>
+      <h1>지수로그 미니 모의고사 1회</h1>
+      <div class="subj">지수와 로그 단원 · 7문항 · 20분</div>
+    </div>
+    <div class="seal">OMR<br><small>마킹지</small></div>
+  </header>
+
+  <div class="views">
+
+    <!-- ===================== START ===================== -->
+    <section class="view active" id="view-start">
+      <div class="card">
+        <div class="meta-grid">
+          <div class="meta"><div class="v">7</div><div class="l">총 문항</div></div>
+          <div class="meta"><div class="v">20<small style="font-size:13px"> 분</small></div><div class="l">시험 시간</div></div>
+          <div class="meta"><div class="v" id="meta-total">22</div><div class="l">총점</div></div>
+          <div class="meta"><div class="v">4 · 3</div><div class="l">객관식·단답형</div></div>
+        </div>
+
+        <div class="notice">
+          <b>안내</b> · 종이 시험지로 문제를 풀고, 이 화면에 답을 마킹하세요. 객관식은 ①~⑤ 중 하나, 단답형은 정수를 입력합니다.
+          <b>시험 시작</b>을 누르면 20분 타이머가 시작되며, 시간이 끝나면 자동으로 제출됩니다. 제출 후 즉시 채점결과와 해설을 볼 수 있습니다.
+        </div>
+
+        <button class="btn btn-primary btn-block" id="btn-start">시험 시작 &nbsp;→</button>
+      </div>
+    </section>
+
+    <!-- ===================== EXAM ===================== -->
+    <section class="view" id="view-exam">
+      <div class="examtop">
+        <div class="who"><b>지수와 로그</b> · 7문항</div>
+        <div class="timer" id="timer"><span class="dot"></span><span id="timer-text">20:00</span></div>
+      </div>
+
+      <div class="omr-title">
+        <h2>OMR 답안 마킹</h2><span>객관식 ①~⑤ / 단답형 정수 입력</span>
+      </div>
+      <div class="omr-hint">한 문항씩 정확히 마킹하세요. 답을 바꾸려면 다시 누르거나 다시 입력하면 됩니다.</div>
+
+      <div class="card" id="omr-card"><!-- rows injected --></div>
+
+      <div class="submit-area">
+        <div class="progress-line">마킹 완료 <b><span id="prog-done">0</span> / 7</b></div>
+        <button class="btn btn-vermilion btn-block" id="btn-submit">답안 제출 &amp; 채점하기</button>
+      </div>
+    </section>
+
+    <!-- ===================== RESULT ===================== -->
+    <section class="view" id="view-result">
+      <div id="result-capture">
+        <div class="score-hero">
+          <div class="big"><span id="res-score">0</span><small> / <span id="res-total">22</span></small></div>
+          <div class="rate">정답률 <b id="res-rate">0%</b> · 소요시간 <span id="res-time">--:--</span></div>
+          <div class="chiprow">
+            <span class="chip ok">맞은 문항 <span id="res-ok">0</span></span>
+            <span class="chip no">틀린 문항 <span id="res-no">0</span></span>
+          </div>
+        </div>
+
+        <table class="result">
+          <thead>
+            <tr><th>문항</th><th>배점</th><th>난이도</th><th>내 답</th><th>정답</th><th>채점</th></tr>
+          </thead>
+          <tbody id="result-body"></tbody>
+        </table>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn btn-primary" id="btn-view-sol" style="flex:1">해설 보기 &nbsp;↓</button>
+        <button class="btn btn-ghost" id="btn-save-png">결과 이미지 저장</button>
+        <button class="btn btn-ghost" id="btn-retry">다시 풀기</button>
+      </div>
+
+      <!-- Solutions -->
+      <div id="sol-anchor"></div>
+      <div class="section-label">
+        <span class="ico">✦</span><h2>해설</h2><div class="rule"></div>
+      </div>
+      <div id="sol-container"></div>
+    </section>
+
+  </div>
+
+  <div class="foot">
+    <div class="div">지수로그 미니 모의고사 1회 · OMR 마킹 &amp; 자동채점 · 동탄국제고 수학과</div>
+  </div>
+</div>
+
+<script>
+/* ============ 정답 & 데이터 ============ */
+const QUESTIONS = [
+  {no:1, type:'choice', answer:2,   points:2, level:'쉬움',   src:'2024 교육청 고2 6월 2번'},
+  {no:2, type:'short',  answer:25,  points:3, level:'쉬움',   src:'2025 교육청 고2 6월 22번'},
+  {no:3, type:'short',  answer:5,   points:3, level:'쉬움',   src:'2024 교육청 고2 6월 22번'},
+  {no:4, type:'choice', answer:3,   points:3, level:'보통',   src:'2025 교육청 고2 6월 11번'},
+  {no:5, type:'choice', answer:3,   points:3, level:'보통',   src:'2024 교육청 고2 6월 13번'},
+  {no:6, type:'choice', answer:2,   points:4, level:'어려움', src:'2025 교육청 고2 6월 15번'},
+  {no:7, type:'short',  answer:144, points:4, level:'어려움', src:'2024 교육청 고2 6월 28번'},
+];
+const CIRCLED = {1:'①',2:'②',3:'③',4:'④',5:'⑤'};
+const TOTAL_POINTS = QUESTIONS.reduce((s,q)=>s+q.points,0);
+const EXAM_SECONDS = 20*60;
+
+const SOLUTIONS = {
+  1:`<div class="step">\\(\\log_3 24 + \\log_3 \\dfrac{3}{8} = \\log_3\\!\\left(24 \\times \\dfrac{3}{8}\\right) = \\log_3 9 = \\log_3 3^2 = 2\\)</div>`,
+  2:`<div class="step">\\(\\sqrt[6]{25^2}\\times\\sqrt[3]{5^4} = 5^{\\frac{4}{6}}\\times 5^{\\frac{4}{3}} = 5^{\\frac{4}{6}+\\frac{4}{3}} = 5^{2} = 25\\)</div>`,
+  3:`<div class="step">\\(\\left(5^{\\,2-\\sqrt{3}}\\right)^{2+\\sqrt{3}} = 5^{(2-\\sqrt{3})(2+\\sqrt{3})} = 5^{\\,4-3} = 5^{1} = 5\\)</div>`,
+  4:`<div class="step">함수 \\(y = 2^{2x} - 2^{x+2} + 6\\)에서 \\(2^{x}=t\\)라 하면 \\(x\\le 3\\)에서 \\(0 \\lt t \\le 8\\)이고 \\(y = t^2 - 4t + 6\\)이다.</div>
+     <div class="step">\\(y = (t-2)^2 + 2\\)는 \\(t=2\\)일 때 최솟값 \\(2\\), \\(t=8\\)일 때 최댓값 \\(38\\)이다.</div>
+     <div class="step">따라서 최댓값과 최솟값의 합은 \\(2 + 38 = 40\\). &nbsp;<b>(정답 ③)</b></div>`,
+  5:`<div class="step">\\(2^{2x+3} + 2 \\le 17\\times 2^{x}\\)에서 \\(2^{x}=t\\;(t \\gt 0)\\)라 하면 \\(8t^2 - 17t + 2 \\le 0\\)</div>
+     <div class="step">\\((t-2)(8t-1)\\le 0 \\Rightarrow \\dfrac{1}{8}\\le t \\le 2 \\Rightarrow 2^{-3}\\le 2^{x}\\le 2^{1} \\Rightarrow -3 \\le x \\le 1\\)</div>
+     <div class="step">이를 만족시키는 정수 \\(x\\)는 \\(-3,\\,-2,\\,-1,\\,0,\\,1\\)이므로 개수는 \\(5\\). &nbsp;<b>(정답 ③)</b></div>`,
+  6:`<div class="step">\\(\\log_{|x+1|}\\{(n-x)(n+1+x)\\}\\)가 정의되려면 \\(|x+1| \\gt 0,\\;|x+1|\\ne 1,\\;(n-x)(n+1+x) \\gt 0\\)</div>
+     <div class="step">\\(|x+1| \\gt 0,\\;|x+1|\\ne 1\\)에서 \\(x \\ne -2,\\,-1,\\,0\\)이고, \\((n-x)(n+1+x) \\gt 0\\)에서 \\(-n-1 \\lt x \\lt n\\)</div>
+     <div class="step">(ⅰ) \\(n=1\\)일 때, \\(-2 \\lt x \\lt 1\\)이고 이 구간의 정수는 \\(-1,\\,0\\)뿐인데 \\(x \\ne -1,\\,0\\)이므로 모두 제외된다. 따라서 정수 \\(x\\)의 개수는 \\(0\\)이다.</div>
+     <div class="step">(ⅱ) \\(n\\ge 2\\)일 때, 구간 \\(-n-1 \\lt x \\lt n\\)의 정수에서 \\(-2,\\,-1,\\,0\\)을 빼면<br>
+       \\(\\quad \\{\\,n-(-n-1)-1\\,\\}-3 = 2n-3 = 25 \\;\\Rightarrow\\; n=14\\)</div>
+     <div class="step">따라서 \\(n=14\\). &nbsp;<b>(정답 ②)</b></div>`,
+  7:`<div class="step">\\(0\\le x \\lt 3\\)에서 그래프가 \\(x\\)축과 만나는 점의 \\(x\\)좌표는 \\(a(4-x^2)=0\\)의 실근이므로 점 \\(A\\)의 좌표는 \\(A(2,\\,0)\\)이다.</div>
+     <div class="step">\\(\\overline{AB}=10\\)이므로 점 \\(B\\)의 좌표는 \\(B(12,\\,0)\\)이고, \\(f(12)=0\\)에서 \\(b\\log_2\\dfrac{12}{3}-5a=0 \\;\\Rightarrow\\; 2b=5a\\)</div>
+     <div class="fig" style="margin:16px auto 10px;display:flex;justify-content:center;">
+       <svg viewBox="0 0 540 430" width="100%" style="max-width:460px;height:auto;" xmlns="http://www.w3.org/2000/svg">
+         <defs>
+           <marker id="q7ah" markerWidth="10" markerHeight="10" refX="6" refY="4.5" orient="auto">
+             <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--ink-soft)"></path>
+           </marker>
+         </defs>
+         <line x1="154" y1="215" x2="154" y2="365" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 3"></line>
+         <line x1="70" y1="365" x2="154" y2="365" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 3"></line>
+         <line x1="45" y1="215" x2="512" y2="215" stroke="var(--ink-soft)" stroke-width="1.6" marker-end="url(#q7ah)"></line>
+         <line x1="70" y1="402" x2="70" y2="40" stroke="var(--ink-soft)" stroke-width="1.6" marker-end="url(#q7ah)"></line>
+         <line x1="66" y1="60" x2="74" y2="60" stroke="var(--ink-soft)" stroke-width="1.2"></line>
+         <line x1="66" y1="95" x2="74" y2="95" stroke="var(--ink-soft)" stroke-width="1.2"></line>
+         <polyline fill="none" stroke="var(--navy)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" points="70,95 84,103 98,125 112,162 126,215 140,283 154,365"></polyline>
+         <polyline fill="none" stroke="var(--navy)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" points="154,365 182,334 238,290 322,246 406,215 492,190"></polyline>
+         <circle cx="126" cy="215" r="3.6" fill="var(--vermilion)"></circle>
+         <circle cx="406" cy="215" r="3.6" fill="var(--vermilion)"></circle>
+         <text x="57" y="52" font-size="15" fill="var(--ink)" font-style="italic">y</text>
+         <text x="505" y="233" font-size="15" fill="var(--ink)" font-style="italic">x</text>
+         <text x="55" y="232" font-size="13" fill="var(--ink-soft)">O</text>
+         <text x="119" y="234" font-size="13" fill="var(--ink)">A</text>
+         <text x="150" y="234" font-size="13" fill="var(--ink-soft)">3</text>
+         <text x="401" y="234" font-size="13" fill="var(--ink)">B</text>
+         <text x="44" y="64" font-size="13" fill="var(--ink-soft)">2b</text>
+         <text x="44" y="99" font-size="13" fill="var(--ink-soft)">4a</text>
+         <text x="29" y="369" font-size="13" fill="var(--ink-soft)">−5a</text>
+         <text x="423" y="177" font-size="14" fill="var(--navy)" font-style="italic">y=f(x)</text>
+       </svg>
+     </div>
+     <div class="step">\\(0\\le x \\lt 3\\)에서 \\(-5a \\lt f(x)\\le 4a\\)이고 \\(f(b)=2b=5a \\gt 4a\\)이므로 \\(b \\gt 3\\)</div>
+     <div class="step">\\(f(b)=b\\log_2\\dfrac{b}{3}-5a=2b \\;\\Rightarrow\\; \\log_2\\dfrac{b}{3}=4 \\;\\Rightarrow\\; b=3\\times 2^4=48,\\;5a=96\\)</div>
+     <div class="step">따라서 \\(5a+b = 96+48 = 144\\). &nbsp;<b>(정답 144)</b></div>`,
+};
+
+/* ============ 상태 ============ */
+let responses = {};      // {no: value}
+let timerId = null;
+let remaining = EXAM_SECONDS;
+let startTs = null;
+
+/* ============ DOM 헬퍼 ============ */
+const $ = s=>document.querySelector(s);
+function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+function renderMath(el){if(window.renderMathInElement){renderMathInElement(el,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],ignoredTags:['script','noscript','style','textarea','pre','code','option','svg'],throwOnError:false});}}
+
+/* ============ OMR 빌드 ============ */
+function buildOMR(){
+  const card = $('#omr-card');
+  card.innerHTML = '';
+  QUESTIONS.forEach(q=>{
+    const row = document.createElement('div');
+    row.className='omr-row';
+    let answerCell='';
+    if(q.type==='choice'){
+      answerCell='<div class="bubbles" data-q="'+q.no+'">'+
+        [1,2,3,4,5].map(n=>`<button class="bubble" data-v="${n}">${CIRCLED[n]}</button>`).join('')+
+        '</div>';
+    }else{
+      answerCell=`<div><input class="short-in" type="text" inputmode="numeric" data-q="${q.no}" placeholder="정수" maxlength="4"><span class="short-tag">단답형</span></div>`;
+    }
+    row.innerHTML=`<div class="qn"><div class="num">${q.no}</div><div class="pt">${q.points}점<br>${q.type==='choice'?'객관식':'단답'}</div></div>${answerCell}`;
+    card.appendChild(row);
+  });
+
+  // events
+  card.querySelectorAll('.bubbles').forEach(group=>{
+    group.querySelectorAll('.bubble').forEach(b=>{
+      b.addEventListener('click',()=>{
+        const qno=+group.dataset.q, v=+b.dataset.v;
+        group.querySelectorAll('.bubble').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel');
+        responses[qno]=v;
+        updateProgress();
+      });
+    });
+  });
+  card.querySelectorAll('.short-in').forEach(inp=>{
+    inp.addEventListener('input',e=>{
+      e.target.value=e.target.value.replace(/[^0-9]/g,'');
+      const qno=+e.target.dataset.q;
+      if(e.target.value==='') delete responses[qno];
+      else responses[qno]=parseInt(e.target.value,10);
+      updateProgress();
+    });
+  });
+}
+function updateProgress(){
+  $('#prog-done').textContent = Object.keys(responses).length;
+}
+
+/* ============ 타이머 ============ */
+function fmt(s){const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
+function startTimer(){
+  remaining=EXAM_SECONDS; startTs=Date.now();
+  $('#timer-text').textContent=fmt(remaining);
+  timerId=setInterval(()=>{
+    remaining--;
+    $('#timer-text').textContent=fmt(Math.max(remaining,0));
+    const t=$('#timer');
+    t.classList.toggle('warn', remaining<=300 && remaining>60);
+    t.classList.toggle('danger', remaining<=60);
+    if(remaining<=0){clearInterval(timerId);submit(true);}
+  },1000);
+}
+
+/* ============ 채점 ============ */
+function submit(auto){
+  if(!auto){
+    const left=7-Object.keys(responses).length;
+    let msg='답안을 제출하고 채점할까요?';
+    if(left>0) msg=`아직 마킹하지 않은 문항이 ${left}개 있습니다.\n그래도 제출하고 채점할까요?`;
+    if(!confirm(msg)) return;
+  }
+  clearInterval(timerId);
+  const used = EXAM_SECONDS - Math.max(remaining,0);
+
+  let score=0, ok=0, no=0;
+  const body=$('#result-body'); body.innerHTML='';
+  QUESTIONS.forEach(q=>{
+    const my = responses[q.no];
+    const correct = (my!==undefined && my===q.answer);
+    if(correct){score+=q.points; ok++;} else no++;
+    const myDisp = my===undefined ? '–' : (q.type==='choice'?CIRCLED[my]:my);
+    const ansDisp = q.type==='choice'?CIRCLED[q.answer]:q.answer;
+    const tr=document.createElement('tr');
+    if(!correct) tr.className='wrong';
+    tr.innerHTML=`<td class="rno">${q.no}</td><td>${q.points}</td><td class="lvl">${q.level}</td>
+      <td>${myDisp}</td><td><b>${ansDisp}</b></td>
+      <td class="mark ${correct?'o':'x'}">${correct?'○':'✕'}</td>`;
+    body.appendChild(tr);
+  });
+
+  $('#res-score').textContent=score;
+  $('#res-total').textContent=TOTAL_POINTS;
+  $('#res-rate').textContent=Math.round(score/TOTAL_POINTS*100)+'%';
+  $('#res-time').textContent=fmt(used);
+  $('#res-ok').textContent=ok;
+  $('#res-no').textContent=no;
+
+  buildSolutions();
+  show('#view-result');
+}
+
+/* ============ 해설 ============ */
+function buildSolutions(){
+  const c=$('#sol-container'); c.innerHTML='';
+  QUESTIONS.forEach(q=>{
+    const my=responses[q.no];
+    const correct=(my!==undefined && my===q.answer);
+    const ansDisp=q.type==='choice'?CIRCLED[q.answer]:q.answer;
+    const block=document.createElement('div');
+    block.className='sol-block';
+    block.innerHTML=`
+      <div class="sol-head">
+        <div class="left">
+          <span class="num">${q.no}</span>
+          <span class="src">${q.src} · ${q.points}점 · ${q.level}</span>
+          <span class="badge ${correct?'o':'x'}">${correct?'맞음':'틀림'}</span>
+        </div>
+        <span class="ans">정답 ${ansDisp}</span>
+      </div>
+      <div class="sol-body">${SOLUTIONS[q.no]}</div>`;
+    c.appendChild(block);
+  });
+  renderMath(c);
+}
+
+/* ============ 이벤트 ============ */
+$('#btn-start').addEventListener('click',()=>{
+  responses={}; updateProgress();
+  buildOMR();
+  show('#view-exam');
+  startTimer();
+});
+$('#btn-submit').addEventListener('click',()=>submit(false));
+$('#btn-view-sol').addEventListener('click',()=>{
+  $('#sol-anchor').scrollIntoView({behavior:'smooth'});
+});
+$('#btn-retry').addEventListener('click',()=>{
+  if(!confirm('처음부터 다시 풀까요? 현재 결과는 사라집니다.')) return;
+  responses={}; show('#view-start');
+});
+$('#btn-save-png').addEventListener('click',()=>{
+  const btn=$('#btn-save-png'); const old=btn.textContent; btn.textContent='저장 중…'; btn.disabled=true;
+  html2canvas($('#result-capture'),{backgroundColor:'#f6f3ec',scale:2}).then(canvas=>{
+    const a=document.createElement('a');
+    a.download=`지수로그_미니모의고사1회_채점결과.png`;
+    a.href=canvas.toDataURL('image/png'); a.click();
+    btn.textContent=old; btn.disabled=false;
+  }).catch(()=>{btn.textContent=old; btn.disabled=false; alert('이미지 저장에 실패했습니다. (인터넷 연결 필요)');});
+});
+
+// 초기값
+$('#meta-total').textContent=TOTAL_POINTS;
+$('#res-total').textContent=TOTAL_POINTS;
+</script>
+</body>
+</html>
